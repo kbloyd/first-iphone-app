@@ -165,6 +165,25 @@
             transform: translateY(0);
         }
 
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .shake-button {
+            background: #f39c12;
+            color: white;
+            margin-top: 10px;
+        }
+
+        .shake-button:hover {
+            background: #e67e22;
+        }
+
+        .hidden {
+            display: none;
+        }
+
         .particles {
             position: fixed;
             top: 0;
@@ -202,8 +221,9 @@
             </div>
         </div>
 
-        <p class="instruction">Tap the ball or shake your phone for wisdom!</p>
+        <p class="instruction" id="instruction">Tap the ball for wisdom!</p>
         <button id="askButton">Ask the Magic Ball</button>
+        <button id="enableShakeButton" class="shake-button hidden">Enable Shake Detection</button>
     </div>
 
     <script>
@@ -212,6 +232,10 @@
         const responseText = document.getElementById('responseText');
         const number8 = document.getElementById('number8');
         const askButton = document.getElementById('askButton');
+        const enableShakeButton = document.getElementById('enableShakeButton');
+        const instruction = document.getElementById('instruction');
+
+        let shakeEnabled = false;
 
         // Create floating particles
         function createParticles() {
@@ -275,13 +299,16 @@
             }, 600);
         }
 
-        // Shake detection for mobile
-        if (window.DeviceMotionEvent) {
+        // Function to enable shake detection
+        function enableShakeDetection() {
             let lastShake = 0;
             window.addEventListener('devicemotion', (e) => {
-                const acc = e.accelerationIncludingGravity;
-                const now = Date.now();
+                if (!shakeEnabled) return;
 
+                const acc = e.accelerationIncludingGravity;
+                if (!acc) return;
+
+                const now = Date.now();
                 if (now - lastShake > 1000) {
                     const movement = Math.abs(acc.x) + Math.abs(acc.y) + Math.abs(acc.z);
                     if (movement > 30) {
@@ -290,12 +317,49 @@
                     }
                 }
             });
+            shakeEnabled = true;
+            instruction.textContent = 'Tap the ball or shake your phone for wisdom!';
+            enableShakeButton.classList.add('hidden');
+        }
+
+        // Check if shake detection is available and handle permissions
+        async function setupShakeDetection() {
+            // Check if DeviceMotionEvent exists
+            if (!window.DeviceMotionEvent) {
+                return; // Shake not supported
+            }
+
+            // Check if permission request is needed (iOS 13+)
+            if (typeof DeviceMotionEvent.requestPermission === 'function') {
+                // iOS 13+ requires user interaction and permission
+                enableShakeButton.classList.remove('hidden');
+
+                enableShakeButton.addEventListener('click', async () => {
+                    try {
+                        const permission = await DeviceMotionEvent.requestPermission();
+                        if (permission === 'granted') {
+                            enableShakeDetection();
+                        } else {
+                            alert('Motion permission denied. You can still tap the ball!');
+                            enableShakeButton.classList.add('hidden');
+                        }
+                    } catch (error) {
+                        console.error('Error requesting motion permission:', error);
+                        alert('Could not enable shake detection. You can still tap the ball!');
+                        enableShakeButton.classList.add('hidden');
+                    }
+                });
+            } else {
+                // Android or older iOS - no permission needed
+                enableShakeDetection();
+            }
         }
 
         magicBall.addEventListener('click', askMagicBall);
         askButton.addEventListener('click', askMagicBall);
 
         createParticles();
+        setupShakeDetection();
     </script>
 </body>
 </html>
