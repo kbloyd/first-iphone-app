@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Magic Decision Maker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            color: rgba(255,255,255,0.9);
+            font-size: 1.1em;
+            margin-bottom: 40px;
+        }
+
+        .magic-ball {
+            width: 280px;
+            height: 280px;
+            margin: 0 auto 40px;
+            background: linear-gradient(145deg, #1a1a1a, #2d2d2d);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow:
+                0 20px 60px rgba(0,0,0,0.4),
+                inset 0 0 20px rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .magic-ball:hover {
+            transform: scale(1.05);
+        }
+
+        .magic-ball:active {
+            transform: scale(0.95);
+        }
+
+        .ball-content {
+            width: 180px;
+            height: 180px;
+            background: #000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            transition: all 0.5s ease;
+        }
+
+        .response-text {
+            color: white;
+            font-size: 1.3em;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        .response-text.show {
+            opacity: 1;
+        }
+
+        .number-8 {
+            color: white;
+            font-size: 6em;
+            font-weight: bold;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .number-8.hide {
+            opacity: 0;
+        }
+
+        .shake {
+            animation: shake 0.6s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0) rotate(-2deg); }
+            20%, 80% { transform: translate3d(4px, 0, 0) rotate(2deg); }
+            30%, 50%, 70% { transform: translate3d(-6px, 0, 0) rotate(-3deg); }
+            40%, 60% { transform: translate3d(6px, 0, 0) rotate(3deg); }
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            width: 0;
+            height: 0;
+            animation: ripple 0.6s ease-out;
+        }
+
+        @keyframes ripple {
+            to {
+                width: 400px;
+                height: 400px;
+                opacity: 0;
+            }
+        }
+
+        .instruction {
+            color: rgba(255,255,255,0.8);
+            font-size: 1em;
+            margin-top: 20px;
+        }
+
+        button {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            animation: float 3s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <h1>🔮 Magic Decision Maker</h1>
+        <p class="subtitle">Ask a yes/no question and tap the magic ball!</p>
+
+        <div class="magic-ball" id="magicBall">
+            <div class="ball-content" id="ballContent">
+                <div class="number-8" id="number8">8</div>
+                <div class="response-text" id="responseText"></div>
+            </div>
+        </div>
+
+        <p class="instruction">Tap the ball or shake your phone for wisdom!</p>
+        <button id="askButton">Ask the Magic Ball</button>
+    </div>
+
+    <script>
+        const magicBall = document.getElementById('magicBall');
+        const ballContent = document.getElementById('ballContent');
+        const responseText = document.getElementById('responseText');
+        const number8 = document.getElementById('number8');
+        const askButton = document.getElementById('askButton');
+
+        // Create floating particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.width = Math.random() * 10 + 5 + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 3 + 's';
+                particle.style.animationDuration = Math.random() * 2 + 3 + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        function createRipple(e) {
+            const ripple = document.createElement('div');
+            ripple.className = 'ripple';
+            const rect = magicBall.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            ripple.style.left = x - 200 + 'px';
+            ripple.style.top = y - 200 + 'px';
+            magicBall.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
+        }
+
+        async function askMagicBall(e) {
+            if (e) createRipple(e);
+
+            // Reset and shake animation
+            magicBall.classList.add('shake');
+            number8.classList.remove('hide');
+            responseText.classList.remove('show');
+            responseText.textContent = '';
+
+            setTimeout(async () => {
+                magicBall.classList.remove('shake');
+
+                // Fetch decision from API
+                try {
+                    const response = await fetch('/api/decision');
+                    const data = await response.json();
+
+                    // Hide 8, show response
+                    number8.classList.add('hide');
+                    responseText.textContent = data.response;
+                    ballContent.style.background = data.color;
+
+                    setTimeout(() => {
+                        responseText.classList.add('show');
+                    }, 300);
+
+                } catch (error) {
+                    console.error('Error fetching decision:', error);
+                    responseText.textContent = 'Try again!';
+                    responseText.classList.add('show');
+                }
+            }, 600);
+        }
+
+        // Shake detection for mobile
+        if (window.DeviceMotionEvent) {
+            let lastShake = 0;
+            window.addEventListener('devicemotion', (e) => {
+                const acc = e.accelerationIncludingGravity;
+                const now = Date.now();
+
+                if (now - lastShake > 1000) {
+                    const movement = Math.abs(acc.x) + Math.abs(acc.y) + Math.abs(acc.z);
+                    if (movement > 30) {
+                        lastShake = now;
+                        askMagicBall();
+                    }
+                }
+            });
+        }
+
+        magicBall.addEventListener('click', askMagicBall);
+        askButton.addEventListener('click', askMagicBall);
+
+        createParticles();
+    </script>
+</body>
+</html>

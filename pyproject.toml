@@ -1,0 +1,10 @@
+[project]
+name = "first-iphone-app"
+version = "0.1.0"
+description = "A fun, interactive Magic Decision Maker web app with beautiful mobile UI"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "flask>=3.1.0",
+    "pytest>=8.3.4",
+]
