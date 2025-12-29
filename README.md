@@ -69,13 +69,24 @@ Then open your browser to `http://localhost:5000`
    - Windows: `ipconfig`
 3. On your iPhone's Safari, go to `http://YOUR_IP_ADDRESS:5000`
 
-#### Option 3: Deploy to a Server
+#### Option 3: Deploy to Render (Recommended!)
 
-Deploy to services like:
-- Heroku
-- Railway
-- Render
-- PythonAnywhere
+Deploy for free and access from anywhere:
+
+1. Go to [render.com](https://render.com) and sign up
+2. Click "New +" → "Web Service"
+3. Connect your GitHub account
+4. Select the `first-iphone-app` repository
+5. Configure the service:
+   - **Name**: `magic-decision-maker` (or any name you like)
+   - **Environment**: `Python 3`
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `gunicorn app:app`
+6. Click "Create Web Service"
+7. Wait for deployment (2-3 minutes)
+8. Access your app from the provided URL on any device!
+
+Your app will be live at: `https://your-app-name.onrender.com`
 
 Then access from anywhere on your iPhone!
 
